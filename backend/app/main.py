@@ -3,6 +3,7 @@ from app.db import scan_results
 from app.scanners.sqli import run_sqlmap
 from app.models import ScanResult
 from app.scanners.xss_scanner import scan_xss
+from app.scanners.csrf_scanner import scan_csrf
 
 app = FastAPI()
 
@@ -31,3 +32,8 @@ async def run_xss_scan(target: str):
         "payloads": results["payloads"],
         "reflected_urls": results["reflected"]
     }
+
+@app.post("/scan/csrf")
+async def run_csrf_scan(target: str):
+    results = scan_csrf(target)
+    return results

@@ -45,7 +45,7 @@ export default function ScanHistory() {
   }, []);
 
   const stripEmojis = (text) =>
-    text.replace(/[\u{1F300}-\u{1F6FF}]/gu, ""); // Remove emojis for PDF
+    text.replace(/[\u{1F300}-\u{1F6FF}]/gu, "");
 
   const generatePDF = (item) => {
     const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
@@ -60,9 +60,7 @@ export default function ScanHistory() {
         doc.addPage();
         y = margin;
       }
-      if (bold) doc.setFont("helvetica", "bold");
-      else doc.setFont("helvetica", "normal");
-
+      doc.setFont("helvetica", bold ? "bold" : "normal");
       const safeText = stripEmojis(text);
       const lines = doc.splitTextToSize(safeText, pageWidth - 2 * margin);
       lines.forEach(line => {
@@ -84,6 +82,17 @@ export default function ScanHistory() {
 
     doc.save(`${item.type.replace(/\s+/g, "_")}_Report.pdf`);
   };
+
+  const renderVulnerabilitySection = (key, data) => (
+    <div key={key} className="border border-gray-700 rounded p-3 bg-gray-900">
+      <h3 className="font-bold text-blue-400 capitalize mb-2">
+        {key.replace(/_/g, " ")} Result
+      </h3>
+      <pre className="text-gray-200 whitespace-pre-wrap">
+        {JSON.stringify(data, null, 2)}
+      </pre>
+    </div>
+  );
 
   return (
     <div className="space-y-4">
@@ -124,26 +133,26 @@ export default function ScanHistory() {
                   View Result
                 </summary>
 
-                <div
-                  className="mt-2 bg-gray-200 dark:bg-gray-700 p-4 rounded text-sm overflow-x-auto leading-relaxed"
-                  style={{ fontFamily: "monospace", whiteSpace: "pre-wrap" }}
-                >
-                  <h3 className="text-base font-bold text-blue-700 dark:text-blue-300 mb-2">
-                    WebVulnScan-Pro Report
-                  </h3>
-                  <p><strong>Scan Type:</strong> {item.type}</p>
-                  <p><strong>Target:</strong> {item.target}</p>
-                  <p><strong>Timestamp:</strong> {new Date(item.timestamp.$date).toLocaleString()}</p>
-                  <p className="mt-2 font-semibold">Scan Result:</p>
-                  <pre>{JSON.stringify(item.result, null, 2)}</pre>
-                </div>
+                <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-x-auto text-sm max-h-[600px]">
+                  <h2 className="font-bold mb-2 text-blue-700 dark:text-blue-400">✅ Scan Result:</h2>
 
-                <button
-                  onClick={() => generatePDF(item)}
-                  className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                >
-                  📥 Download PDF
-                </button>
+                  {type === "FULL" && typeof item.result === "object" ? (
+                    <div className="space-y-4">
+                      {Object.entries(item.result).map(([key, value]) =>
+                        key !== "target" ? renderVulnerabilitySection(key, value) : null
+                      )}
+                    </div>
+                  ) : (
+                    <pre>{JSON.stringify(item.result, null, 2)}</pre>
+                  )}
+
+                  <button
+                    onClick={() => generatePDF(item)}
+                    className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                  >
+                    📥 Download PDF
+                  </button>
+                </div>
               </details>
             </div>
           );

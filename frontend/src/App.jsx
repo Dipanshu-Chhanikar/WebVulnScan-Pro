@@ -1,8 +1,8 @@
-import ScanForm from './components/ScanForm';
+import ScanForm from "./components/ScanForm";
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-white text-black">
       <ScanForm />
     </div>
   );

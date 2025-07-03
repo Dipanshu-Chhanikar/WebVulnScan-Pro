@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import html2pdf from "html2pdf.js";
 
 // Define severity levels and icons per vulnerability type
 const severityLevels = {
@@ -44,6 +45,18 @@ export default function ScanHistory() {
       .catch(err => console.error(err));
   }, []);
 
+  const generatePDF = (item, index) => {
+    const element = document.getElementById(`scan-report-${index}`);
+    const opt = {
+      margin: 0.5,
+      filename: `${item.type}-${new Date(item.timestamp.$date).toISOString()}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
+  };
+
   return (
     <div className="space-y-4">
       {history.length === 0 ? (
@@ -61,9 +74,7 @@ export default function ScanHistory() {
                 <div className="text-lg font-semibold text-blue-500">
                   {icon} {type}
                 </div>
-                <span
-                  className={`text-xs text-white px-2 py-1 rounded ${colorClass}`}
-                >
+                <span className={`text-xs text-white px-2 py-1 rounded ${colorClass}`}>
                   {severity}
                 </span>
               </div>
@@ -75,9 +86,22 @@ export default function ScanHistory() {
 
               <details className="mt-2">
                 <summary className="cursor-pointer text-blue-600">View Result</summary>
-                <pre className="mt-2 bg-gray-200 dark:bg-gray-700 p-2 rounded text-sm overflow-x-auto">
-                  {JSON.stringify(item.result, null, 2)}
-                </pre>
+                <div id={`scan-report-${i}`} className="mt-2 bg-gray-200 dark:bg-gray-700 p-2 rounded text-sm overflow-x-auto">
+                  <h3 className="text-base font-semibold text-blue-800 dark:text-blue-400 mb-2">
+                    WebVulnScan-Pro Report
+                  </h3>
+                  <p><strong>Scan Type:</strong> {item.type}</p>
+                  <p><strong>Target:</strong> {item.target}</p>
+                  <p><strong>Timestamp:</strong> {new Date(item.timestamp.$date).toLocaleString()}</p>
+                  <p className="mt-2 font-medium">Scan Result:</p>
+                  <pre>{JSON.stringify(item.result, null, 2)}</pre>
+                </div>
+                <button
+                  onClick={() => generatePDF(item, i)}
+                  className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                >
+                  📥 Download PDF
+                </button>
               </details>
             </div>
           );

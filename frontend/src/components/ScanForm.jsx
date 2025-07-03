@@ -176,8 +176,10 @@ export default function ScanForm() {
                       {key.replace(/_/g, " ")} Result
                     </h3>
                     <pre className="text-gray-200 whitespace-pre-wrap">
+                      {value.duration ? `⏱️ Duration: ${value.duration}\n` : ""}
                       {JSON.stringify(value, null, 2)}
                     </pre>
+
                   </div>
                 ) : null
               )}

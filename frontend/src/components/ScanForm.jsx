@@ -20,33 +20,21 @@ export default function ScanForm() {
 
     try {
       if (scanType === "all") {
-        const fullResult = { target };
+        setScanStatus("⏳ 🔍 Starting full scan...");
         const start = Date.now();
 
-        const scanStep = async (label, endpoint, key) => {
-          setScanStatus(label);
-          const res = await axios.post(
-            `http://localhost:8000/scan/${endpoint}?target=${encodeURIComponent(target)}`,
-            {},
-            { signal: controller.signal }
-          );
-          fullResult[key] = res.data;
-        };
+        const res = await axios.post(
+          `http://localhost:8000/scan/all?target=${encodeURIComponent(target)}`,
+          {},
+          { signal: controller.signal }
+        );
 
-        await scanStep("🔍 Scanning for XSS...", "xss", "xss");
-        await scanStep("💉 Scanning for SQL Injection...", "sqli", "sql_injection");
-        await scanStep("🔓 Scanning for CSRF...", "csrf", "csrf");
-        await scanStep("🔁 Scanning for Open Redirect...", "open-redirect", "open_redirect");
-        await scanStep("📭 Checking Security Headers...", "security-headers", "security_headers");
-        await scanStep("🎯 Scanning for Clickjacking...", "clickjacking", "clickjacking");
-        await scanStep("🗂️ Scanning for Path Traversal...", "path-traversal", "path_traversal");
-        await scanStep("💣 Scanning for Remote Code Execution...", "rce", "rce");
-
+        const fullResult = res.data;
         const totalDuration = (Date.now() - start) / 1000;
         fullResult.total_duration = `${totalDuration.toFixed(2)}s`;
 
-        setScanStatus("✅ Full Scan Complete.");
         setResult(fullResult);
+        setScanStatus("✅ Full Scan Complete.");
       } else {
         setScanStatus(`🕵️‍♂️ Scanning for ${scanType.toUpperCase()}...`);
         const res = await axios.post(
@@ -125,7 +113,7 @@ export default function ScanForm() {
 
       {scanStatus && (
         <div className={`text-sm mt-2 ${loading ? "text-gray-500 animate-pulse" : "text-green-600"}`}>
-          {loading ? `⏳ ${scanStatus}` : scanStatus}
+          {loading ? `${scanStatus}` : scanStatus}
         </div>
       )}
 
@@ -142,7 +130,7 @@ export default function ScanForm() {
                       {key.replace(/_/g, " ")} Result
                     </h3>
                     <pre className="text-gray-200 whitespace-pre-wrap">
-                      {value.duration ? `⏱️ Duration: ${value.duration}\n` : ""}
+                      {value?.duration ? `⏱️ Duration: ${value.duration}\n` : ""}
                       {JSON.stringify(value, null, 2)}
                     </pre>
                   </div>

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query, BackgroundTasks
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from datetime import datetime
@@ -105,7 +105,7 @@ async def run_rce_scan(target: str):
     return result
 
 
-# ✅ Background full scan with total duration
+# ✅ Original background full scan logic (unchanged as per request)
 def perform_full_scan(target: str):
     start = time()
     xss = scan_xss(target)
@@ -138,10 +138,37 @@ def perform_full_scan(target: str):
     })
 
 
+# ✅ New: Synchronous full scan route (replaces background one)
 @app.post("/scan/all")
-async def run_full_scan(target: str, background_tasks: BackgroundTasks):
-    background_tasks.add_task(perform_full_scan, target)
-    return {"message": f"Full scan started for {target}. Results will be saved soon."}
+async def run_full_scan(target: str):
+    from time import time
+    start = time()
+
+    xss = scan_xss(target)
+    csrf = scan_csrf(target)
+    redirect = scan_open_redirect(target)
+    headers = scan_security_headers(target)
+    clickjacking = scan_clickjacking(target)
+    sqli = scan_sql_injection(target)
+    path = scan_path_traversal(target)
+    rce = scan_rce(target)
+
+    full_result = {
+        "target": target,
+        "xss": xss,
+        "csrf": csrf,
+        "open_redirect": redirect,
+        "security_headers": headers,
+        "clickjacking": clickjacking,
+        "sql_injection": sqli,
+        "path_traversal": path,
+        "rce": rce,
+        "total_duration": f"{round(time() - start, 2)} seconds"
+    }
+
+    save_scan_result("FULL", target, full_result)
+    return full_result
+
 
 
 @app.get("/history")

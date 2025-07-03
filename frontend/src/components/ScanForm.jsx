@@ -6,18 +6,55 @@ export default function ScanForm() {
   const [scanType, setScanType] = useState("xss");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [scanStatus, setScanStatus] = useState("");
 
   const handleScan = async () => {
     if (!target) return alert("Please enter a target URL.");
     setLoading(true);
+    setResult(null);
+    setScanStatus("");
+
     try {
-      const res = await axios.post(
-        `http://localhost:8000/scan/${scanType}?target=${encodeURIComponent(target)}`
-      );
-      setResult(res.data);
+      if (scanType === "all") {
+        const fullResult = { target };
+
+        setScanStatus("🔍 Scanning for XSS...");
+        fullResult.xss = (await axios.post(`http://localhost:8000/scan/xss?target=${encodeURIComponent(target)}`)).data;
+
+        setScanStatus("💉 Scanning for SQL Injection...");
+        fullResult.sql_injection = (await axios.post(`http://localhost:8000/scan/sqli?target=${encodeURIComponent(target)}`)).data;
+
+        setScanStatus("🔓 Scanning for CSRF...");
+        fullResult.csrf = (await axios.post(`http://localhost:8000/scan/csrf?target=${encodeURIComponent(target)}`)).data;
+
+        setScanStatus("🔁 Scanning for Open Redirect...");
+        fullResult.open_redirect = (await axios.post(`http://localhost:8000/scan/open-redirect?target=${encodeURIComponent(target)}`)).data;
+
+        setScanStatus("📭 Checking Security Headers...");
+        fullResult.security_headers = (await axios.post(`http://localhost:8000/scan/security-headers?target=${encodeURIComponent(target)}`)).data;
+
+        setScanStatus("🎯 Scanning for Clickjacking...");
+        fullResult.clickjacking = (await axios.post(`http://localhost:8000/scan/clickjacking?target=${encodeURIComponent(target)}`)).data;
+
+        setScanStatus("🗂️ Scanning for Path Traversal...");
+        fullResult.path_traversal = (await axios.post(`http://localhost:8000/scan/path-traversal?target=${encodeURIComponent(target)}`)).data;
+
+        setScanStatus("💣 Scanning for Remote Code Execution...");
+        fullResult.rce = (await axios.post(`http://localhost:8000/scan/rce?target=${encodeURIComponent(target)}`)).data;
+
+        setScanStatus("✅ Scan complete.");
+        setResult(fullResult);
+      } else {
+        setScanStatus(`Scanning for ${scanType.toUpperCase()}...`);
+        const res = await axios.post(`http://localhost:8000/scan/${scanType}?target=${encodeURIComponent(target)}`);
+        setResult(res.data);
+        setScanStatus("✅ Scan complete.");
+      }
     } catch (err) {
       setResult({ error: err.message });
+      setScanStatus("❌ Scan failed.");
     }
+
     setLoading(false);
   };
 
@@ -55,6 +92,14 @@ export default function ScanForm() {
         {loading ? "🔄 Scanning..." : "🚀 Start Scan"}
       </button>
 
+      {/* Scanner Status Loader */}
+      {loading && (
+        <div className="text-sm text-gray-500 dark:text-gray-300 mt-2 animate-pulse">
+          ⏳ {scanStatus}
+        </div>
+      )}
+
+      {/* Result Display */}
       {result && (
         <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-x-auto text-sm max-h-[600px]">
           <h2 className="font-bold mb-2 text-blue-700 dark:text-blue-400">✅ Scan Result:</h2>

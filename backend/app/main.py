@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from datetime import datetime
@@ -79,8 +79,8 @@ async def run_rce_scan(target: str):
     save_scan_result("RCE", target, result)
     return result
 
-@app.post("/scan/all")
-async def run_full_scan(target: str):
+# ✅ Helper function to perform full scan in background
+def perform_full_scan(target: str):
     xss = scan_xss(target)
     csrf = scan_csrf(target)
     redirect = scan_open_redirect(target)
@@ -99,15 +99,18 @@ async def run_full_scan(target: str):
         "sql_injection": sqli,
         "path_traversal": path,
         "rce": rce
-        }
-
-    save_scan_result("FULL", target, full_result)
-    return {
-        "target": target,
-        **full_result
     }
 
+    save_scan_result("FULL", target, {
+        "target": target,
+        **full_result
+    })
 
+# ✅ Now background-enabled scan route
+@app.post("/scan/all")
+async def run_full_scan(target: str, background_tasks: BackgroundTasks):
+    background_tasks.add_task(perform_full_scan, target)
+    return {"message": f"Full scan started for {target}. Results will be saved soon."}
 
 @app.get("/history")
 async def get_scan_history(skip: int = 0, limit: int = 10):

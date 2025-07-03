@@ -59,7 +59,21 @@ export default function ScanForm() {
       {result && (
         <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-x-auto text-sm max-h-[400px]">
           <h2 className="font-bold mb-2 text-blue-700 dark:text-blue-400">✅ Scan Result:</h2>
-          <pre>{JSON.stringify(result, null, 2)}</pre>
+          {scanType === "all" ? (
+            <div className="space-y-4">
+              {["xss", "csrf", "open_redirect", "security_headers", "clickjacking"].map((type) => (
+                <div key={type} className="border border-gray-600 rounded p-3">
+                  <h3 className="font-bold text-blue-500 capitalize">{type.replace("_", " ")} Result</h3>
+                  <pre className="text-sm overflow-x-auto">
+                    {JSON.stringify(result[type], null, 2)}
+                  </pre>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <pre>{JSON.stringify(result, null, 2)}</pre>
+          )}
+
         </div>
       )}
     </div>

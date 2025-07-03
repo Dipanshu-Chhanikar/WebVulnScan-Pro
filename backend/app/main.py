@@ -6,6 +6,7 @@ from app.scanners.xss_scanner import scan_xss
 from app.scanners.csrf_scanner import scan_csrf
 from app.scanners.open_redirect_scanner import scan_open_redirect
 from app.scanners.security_headers_scanner import scan_security_headers
+from app.scanners.clickjacking_scanner import scan_clickjacking
 
 app = FastAPI()
 
@@ -48,3 +49,7 @@ async def run_open_redirect_scan(target: str):
 @app.post("/scan/security-headers")
 async def run_security_headers_scan(target: str):
     return scan_security_headers(target)
+
+@app.post("/scan/clickjacking")
+async def run_clickjacking_scan(target: str):
+    return scan_clickjacking(target)

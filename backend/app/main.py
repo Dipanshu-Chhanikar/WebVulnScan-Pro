@@ -14,6 +14,7 @@ from app.scanners.open_redirect_scanner import scan_open_redirect
 from app.scanners.security_headers_scanner import scan_security_headers
 from app.scanners.clickjacking_scanner import scan_clickjacking
 from app.scanners.path_traversal_scanner import scan_path_traversal
+from app.scanners.rce_scanner import scan_rce
 
 app = FastAPI()
 
@@ -70,6 +71,12 @@ async def run_clickjacking_scan(target: str):
 async def run_path_traversal_scan(target: str):
     result = scan_path_traversal(target)
     save_scan_result("Path Traversal", target, result)
+    return result
+
+@app.post("/scan/rce")
+async def run_rce_scan(target: str):
+    result = scan_rce(target)
+    save_scan_result("RCE", target, result)
     return result
 
 @app.post("/scan/all")

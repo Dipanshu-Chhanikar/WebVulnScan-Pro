@@ -143,7 +143,14 @@ export default function ScanHistory() {
                       )}
                     </div>
                   ) : (
-                    <pre>{JSON.stringify(item.result, null, 2)}</pre>
+                    <div className="border border-gray-700 rounded p-3 bg-gray-900">
+                      <h3 className="font-bold text-blue-400 capitalize mb-2">
+                        {type} Result
+                      </h3>
+                      <pre className="text-gray-200 whitespace-pre-wrap">
+                        {JSON.stringify(item.result, null, 2)}
+                      </pre>
+                    </div>
                   )}
 
                   <button

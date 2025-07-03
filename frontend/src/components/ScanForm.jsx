@@ -38,11 +38,15 @@ export default function ScanForm() {
       >
         <option value="xss">XSS</option>
         <option value="csrf">CSRF</option>
+        <option value="sqli">SQL Injection</option>
+        <option value="path-traversal">Path Traversal</option>
+        <option value="rce">Remote Code Execution</option>
         <option value="open-redirect">Open Redirect</option>
         <option value="security-headers">Security Headers</option>
         <option value="clickjacking">Clickjacking</option>
         <option value="all">Full Scan</option>
       </select>
+
 
       <button
         onClick={handleScan}

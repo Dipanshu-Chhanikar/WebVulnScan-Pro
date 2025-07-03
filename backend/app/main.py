@@ -86,6 +86,9 @@ async def run_full_scan(target: str):
     redirect = scan_open_redirect(target)
     headers = scan_security_headers(target)
     clickjacking = scan_clickjacking(target)
+    sqli = scan_sql_injection(target)
+    path = scan_path_traversal(target)
+    rce = scan_rce(target)
 
     full_result = {
         "target": target,
@@ -94,10 +97,14 @@ async def run_full_scan(target: str):
         "open_redirect": redirect,
         "security_headers": headers,
         "clickjacking": clickjacking,
+        "sql_injection": sqli,
+        "path_traversal": path,
+        "rce": rce
     }
 
     save_scan_result("FULL", target, full_result)
     return full_result
+
 
 @app.get("/history")
 async def get_scan_history(limit: int = 20):

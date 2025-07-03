@@ -37,6 +37,8 @@ const severityColor = {
 
 export default function ScanHistory() {
   const [history, setHistory] = useState([]);
+  const [search, setSearch] = useState("");
+  const [scanTypeFilter, setScanTypeFilter] = useState("ALL");
 
   useEffect(() => {
     axios.get("http://localhost:8000/history")
@@ -133,12 +135,42 @@ export default function ScanHistory() {
     </div>
   );
 
+  const filteredHistory = history.filter((item) => {
+    const matchesSearch = item.target.toLowerCase().includes(search.toLowerCase());
+    const matchesType = scanTypeFilter === "ALL" || item.type === scanTypeFilter;
+    return matchesSearch && matchesType;
+  });
+
+  const uniqueScanTypes = [
+    "ALL",
+    ...Array.from(new Set(history.map((h) => h.type))).sort()
+  ];
+
   return (
     <div className="space-y-4">
-      {history.length === 0 ? (
+      <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+        <input
+          type="text"
+          placeholder="🔍 Search by target URL"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="p-2 border rounded-lg bg-gray-100 dark:bg-gray-800 text-black dark:text-white w-full sm:w-1/2"
+        />
+        <select
+          value={scanTypeFilter}
+          onChange={(e) => setScanTypeFilter(e.target.value)}
+          className="p-2 border rounded-lg bg-gray-100 dark:bg-gray-800 text-black dark:text-white w-full sm:w-1/3"
+        >
+          {uniqueScanTypes.map((type) => (
+            <option key={type} value={type}>{type}</option>
+          ))}
+        </select>
+      </div>
+
+      {filteredHistory.length === 0 ? (
         <p className="text-gray-500 text-sm">No scan history available yet.</p>
       ) : (
-        history.map((item, i) => {
+        filteredHistory.map((item, i) => {
           const type = item.type;
           const icon = icons[type] || "📄";
           const severity = severityLevels[type] || "Info";
@@ -173,7 +205,6 @@ export default function ScanHistory() {
                 </summary>
 
                 <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-x-auto text-sm max-h-[600px]">
-                  {/* ✅ Scan Result heading + 📋 Copy JSON */}
                   <div className="flex justify-between items-center mb-2">
                     <h2 className="font-bold text-blue-700 dark:text-blue-400">
                       ✅ Scan Result:
@@ -205,7 +236,6 @@ export default function ScanHistory() {
                     </div>
                   )}
 
-                  {/* 📥 Download PDF + 📄 Export TXT buttons */}
                   <div className="mt-4 flex gap-2">
                     <button
                       onClick={() => generatePDF(item)}

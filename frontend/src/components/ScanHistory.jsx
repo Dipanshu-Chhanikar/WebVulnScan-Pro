@@ -45,7 +45,7 @@ export default function ScanHistory() {
   }, []);
 
   const stripEmojis = (text) =>
-    text.replace(/[\u{1F300}-\u{1F6FF}]/gu, "");
+    text.replace(/[\u{1F300}-\u{1F6FF}]/gu, "").replace(/[^\x00-\x7F]/g, "");
 
   const generatePDF = (item) => {
     const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
@@ -71,14 +71,28 @@ export default function ScanHistory() {
 
     writeLine("WebVulnScan-Pro Report", true);
     writeLine("");
-    writeLine(`Scan Type: ${item.type}`);
+    writeLine(`Scan Type: ${stripEmojis(item.type)}`);
     writeLine(`Target: ${item.target}`);
     writeLine(`Time: ${new Date(item.timestamp.$date).toLocaleString()}`);
     writeLine("");
     writeLine("Scan Result:", true);
+    writeLine("");
 
-    const resultText = JSON.stringify(item.result, null, 2).split("\n");
-    resultText.forEach(line => writeLine(line));
+    // If FULL scan, format each vulnerability result separately
+    if (item.type === "FULL" && typeof item.result === "object") {
+      Object.entries(item.result).forEach(([key, value]) => {
+        if (key !== "target") {
+          writeLine(`${key.replace(/_/g, " ")} Result`, true);
+          const jsonLines = JSON.stringify(value, null, 2).split("\n");
+          jsonLines.forEach(line => writeLine(line));
+          writeLine("");
+        }
+      });
+    } else {
+      // Single scan result
+      const jsonLines = JSON.stringify(item.result, null, 2).split("\n");
+      jsonLines.forEach(line => writeLine(line));
+    }
 
     doc.save(`${item.type.replace(/\s+/g, "_")}_Report.pdf`);
   };

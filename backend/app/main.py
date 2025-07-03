@@ -49,3 +49,23 @@ async def run_clickjacking_scan(target: str):
     result = scan_clickjacking(target)
     save_scan_result("Clickjacking", target, result)
     return result
+
+@app.post("/scan/all")
+async def run_full_scan(target: str):
+    xss = scan_xss(target)
+    csrf = scan_csrf(target)
+    redirect = scan_open_redirect(target)
+    headers = scan_security_headers(target)
+    clickjacking = scan_clickjacking(target)
+
+    full_result = {
+        "target": target,
+        "xss": xss,
+        "csrf": csrf,
+        "open_redirect": redirect,
+        "security_headers": headers,
+        "clickjacking": clickjacking,
+    }
+
+    save_scan_result("FULL", target, full_result)
+    return full_result

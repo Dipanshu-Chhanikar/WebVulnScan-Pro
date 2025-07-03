@@ -5,6 +5,7 @@ from app.models import ScanResult
 from app.scanners.xss_scanner import scan_xss
 from app.scanners.csrf_scanner import scan_csrf
 from app.scanners.open_redirect_scanner import scan_open_redirect
+from app.scanners.security_headers_scanner import scan_security_headers
 
 app = FastAPI()
 
@@ -43,3 +44,7 @@ async def run_csrf_scan(target: str):
 async def run_open_redirect_scan(target: str):
     results = scan_open_redirect(target)
     return results
+
+@app.post("/scan/security-headers")
+async def run_security_headers_scan(target: str):
+    return scan_security_headers(target)

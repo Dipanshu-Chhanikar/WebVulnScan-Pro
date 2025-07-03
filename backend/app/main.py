@@ -110,9 +110,9 @@ async def run_full_scan(target: str):
 
 
 @app.get("/history")
-async def get_scan_history(limit: int = 20):
+async def get_scan_history(skip: int = 0, limit: int = 10):
     try:
-        results = collection.find().sort("timestamp", -1).limit(limit)
+        results = collection.find().sort("timestamp", -1).skip(skip).limit(limit)
         json_results = json.loads(json_util.dumps(list(results)))
         return JSONResponse(content=json_results)
     except Exception as e:

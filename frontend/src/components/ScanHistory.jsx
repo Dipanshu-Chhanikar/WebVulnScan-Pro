@@ -39,15 +39,25 @@ export default function ScanHistory() {
   const [history, setHistory] = useState([]);
   const [search, setSearch] = useState("");
   const [scanTypeFilter, setScanTypeFilter] = useState("ALL");
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 10;
+
+  const fetchPage = (pageNumber) => {
+    axios.get(`http://localhost:8000/history?skip=${pageNumber * limit}&limit=${limit}`)
+      .then(res => {
+        setHistory(res.data);
+        setHasMore(res.data.length === limit);
+      })
+      .catch(err => console.error(err));
+  };
 
   useEffect(() => {
-    axios.get("http://localhost:8000/history")
-      .then(res => setHistory(res.data))
-      .catch(err => console.error(err));
-  }, []);
+    fetchPage(page);
+  }, [page]);
 
   const stripEmojis = (text) =>
-    text.replace(/[\u{1F300}-\u{1F6FF}]/gu, "").replace(/[^\x00-\x7F]/g, "");
+    text.replace(/[🌀-🛿]/gu, "").replace(/[^\x00-\x7F]/g, "");
 
   const generatePDF = (item) => {
     const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
@@ -256,6 +266,23 @@ export default function ScanHistory() {
           );
         })
       )}
+
+      <div className="flex justify-center gap-4 mt-4">
+        <button
+          onClick={() => setPage((prev) => Math.max(prev - 1, 0))}
+          className="px-4 py-2 bg-gray-700 text-white rounded disabled:opacity-50"
+          disabled={page === 0}
+        >
+          ⬅️ Previous
+        </button>
+        <button
+          onClick={() => setPage((prev) => (hasMore ? prev + 1 : prev))}
+          className="px-4 py-2 bg-gray-700 text-white rounded disabled:opacity-50"
+          disabled={!hasMore}
+        >
+          Next ➡️
+        </button>
+      </div>
     </div>
   );
 }

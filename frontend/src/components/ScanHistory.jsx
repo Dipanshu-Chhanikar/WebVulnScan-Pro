@@ -11,26 +11,25 @@ export default function ScanHistory() {
   }, []);
 
   return (
-    <div className="p-4 max-w-5xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">🕓 Scan History</h2>
+    <div className="space-y-4">
       {history.length === 0 ? (
-        <p className="text-gray-600">No scans yet.</p>
+        <p className="text-gray-500 text-sm">No scan history available yet.</p>
       ) : (
-        <div className="space-y-3">
-          {history.map((item, i) => (
-            <div key={i} className="border p-3 rounded bg-white shadow">
-              <div><strong>Type:</strong> {item.type}</div>
-              <div><strong>Target:</strong> {item.target}</div>
-              <div><strong>Time:</strong> {new Date(item.timestamp.$date).toLocaleString()}</div>
-              <details className="mt-2">
-                <summary className="cursor-pointer text-blue-600">View Details</summary>
-                <pre className="bg-gray-100 p-2 rounded text-sm whitespace-pre-wrap">
-                  {JSON.stringify(item.result, null, 2)}
-                </pre>
-              </details>
+        history.map((item, i) => (
+          <div key={i} className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+            <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <span className="block">🔍 <strong>Type:</strong> {item.type}</span>
+              <span className="block">🌐 <strong>Target:</strong> {item.target}</span>
+              <span className="block">🕒 <strong>Time:</strong> {new Date(item.timestamp.$date).toLocaleString()}</span>
             </div>
-          ))}
-        </div>
+            <details className="mt-2">
+              <summary className="cursor-pointer text-blue-600">View Result</summary>
+              <pre className="mt-2 bg-gray-200 dark:bg-gray-700 p-2 rounded text-sm overflow-x-auto">
+                {JSON.stringify(item.result, null, 2)}
+              </pre>
+            </details>
+          </div>
+        ))
       )}
     </div>
   );

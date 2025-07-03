@@ -1,2 +1,39 @@
+# === Backend (FastAPI / Python) ===
 .env
 __pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+instance/
+.env.*
+
+# === Frontend (React / Node.js) ===
+node_modules/
+dist/
+build/
+*.log
+.vite/
+.env.local
+.env.development
+.env.production
+
+# === System Files ===
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.bak
+
+# === IDEs and Editors ===
+.vscode/
+.idea/
+*.code-workspace
+
+# === Misc ===
+coverage/
+*.tgz
+*.gz
+*.zip
+*.tar

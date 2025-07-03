@@ -22,19 +22,17 @@ export default function ScanForm() {
   };
 
   return (
-    <div className="p-4 max-w-xl mx-auto space-y-4">
-      <h1 className="text-2xl font-bold text-center">WebVulnScan-Pro</h1>
-
+    <div className="space-y-4">
       <input
         type="text"
         placeholder="Enter target URL (e.g. http://testphp.vulnweb.com)"
-        className="w-full p-2 border rounded"
+        className="w-full p-3 border rounded-lg bg-gray-100 dark:bg-gray-800 dark:border-gray-700 text-black dark:text-white"
         value={target}
         onChange={(e) => setTarget(e.target.value)}
       />
 
       <select
-        className="w-full p-2 border rounded"
+        className="w-full p-3 border rounded-lg bg-gray-100 dark:bg-gray-800 dark:border-gray-700 text-black dark:text-white"
         value={scanType}
         onChange={(e) => setScanType(e.target.value)}
       >
@@ -48,15 +46,15 @@ export default function ScanForm() {
 
       <button
         onClick={handleScan}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white p-2 rounded"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-semibold"
         disabled={loading}
       >
-        {loading ? "Scanning..." : "Start Scan"}
+        {loading ? "🔄 Scanning..." : "🚀 Start Scan"}
       </button>
 
       {result && (
-        <div className="mt-4 p-3 bg-gray-100 rounded text-sm whitespace-pre-wrap">
-          <h2 className="font-semibold mb-2">Scan Result:</h2>
+        <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-x-auto text-sm max-h-[400px]">
+          <h2 className="font-bold mb-2 text-blue-700 dark:text-blue-400">✅ Scan Result:</h2>
           <pre>{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}

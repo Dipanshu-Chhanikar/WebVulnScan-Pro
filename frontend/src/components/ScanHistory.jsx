@@ -95,6 +95,33 @@ export default function ScanHistory() {
     doc.save(`${item.type.replace(/\s+/g, "_")}_Report.pdf`);
   };
 
+  const exportAsText = (item) => {
+    let content = `WebVulnScan-Pro Report\n\n`;
+    content += `Scan Type: ${stripEmojis(item.type)}\n`;
+    content += `Target: ${item.target}\n`;
+    content += `Time: ${new Date(item.timestamp.$date).toLocaleString()}\n\n`;
+    content += `Scan Result:\n\n`;
+
+    if (item.type === "FULL" && typeof item.result === "object") {
+      Object.entries(item.result).forEach(([key, value]) => {
+        if (key !== "target") {
+          content += `${key.replace(/_/g, " ")} Result:\n`;
+          content += JSON.stringify(value, null, 2) + "\n\n";
+        }
+      });
+    } else {
+      content += JSON.stringify(item.result, null, 2);
+    }
+
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${item.type.replace(/\s+/g, "_")}_Report.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const renderVulnerabilitySection = (key, data) => (
     <div key={key} className="border border-gray-700 rounded p-3 bg-gray-900">
       <h3 className="font-bold text-blue-400 capitalize mb-2">
@@ -178,12 +205,21 @@ export default function ScanHistory() {
                     </div>
                   )}
 
-                  <button
-                    onClick={() => generatePDF(item)}
-                    className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                  >
-                    📥 Download PDF
-                  </button>
+                  {/* 📥 Download PDF + 📄 Export TXT buttons */}
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      onClick={() => generatePDF(item)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                    >
+                      📥 Download PDF
+                    </button>
+                    <button
+                      onClick={() => exportAsText(item)}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+                    >
+                      📄 Export as .txt
+                    </button>
+                  </div>
                 </div>
               </details>
             </div>

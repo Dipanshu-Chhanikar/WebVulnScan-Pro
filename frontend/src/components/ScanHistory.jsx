@@ -78,7 +78,6 @@ export default function ScanHistory() {
     writeLine("Scan Result:", true);
     writeLine("");
 
-    // If FULL scan, format each vulnerability result separately
     if (item.type === "FULL" && typeof item.result === "object") {
       Object.entries(item.result).forEach(([key, value]) => {
         if (key !== "target") {
@@ -89,7 +88,6 @@ export default function ScanHistory() {
         }
       });
     } else {
-      // Single scan result
       const jsonLines = JSON.stringify(item.result, null, 2).split("\n");
       jsonLines.forEach(line => writeLine(line));
     }
@@ -148,7 +146,20 @@ export default function ScanHistory() {
                 </summary>
 
                 <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-x-auto text-sm max-h-[600px]">
-                  <h2 className="font-bold mb-2 text-blue-700 dark:text-blue-400">✅ Scan Result:</h2>
+                  {/* ✅ Scan Result heading + 📋 Copy JSON */}
+                  <div className="flex justify-between items-center mb-2">
+                    <h2 className="font-bold text-blue-700 dark:text-blue-400">
+                      ✅ Scan Result:
+                    </h2>
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(JSON.stringify(item.result, null, 2))
+                      }
+                      className="bg-gray-700 hover:bg-gray-800 text-white px-3 py-1 text-sm rounded"
+                    >
+                      📋 Copy JSON
+                    </button>
+                  </div>
 
                   {type === "FULL" && typeof item.result === "object" ? (
                     <div className="space-y-4">

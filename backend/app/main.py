@@ -1,16 +1,18 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from datetime import datetime
+from bson import json_util
+import json
+
 from app.db import save_scan_result, collection
-from app.scanners.sqli import run_sqlmap
 from app.models import ScanResult
+from app.scanners.sqli_scanner import scan_sql_injection
 from app.scanners.xss_scanner import scan_xss
 from app.scanners.csrf_scanner import scan_csrf
 from app.scanners.open_redirect_scanner import scan_open_redirect
 from app.scanners.security_headers_scanner import scan_security_headers
 from app.scanners.clickjacking_scanner import scan_clickjacking
-from bson import json_util
-import json
 
 app = FastAPI()
 
@@ -28,10 +30,10 @@ def root():
     return {"message": "WebVulnScan-Pro API"}
 
 @app.post("/scan/sqli")
-def scan_sqli(target: str):
-    output = run_sqlmap(target)
-    save_scan_result("SQL Injection", target, output)
-    return {"status": "done", "details": output[:1000]}  # Trim output
+def run_sqli_scan(target: str = Query(...)):
+    result = scan_sql_injection(target)
+    save_scan_result("SQL Injection", target, result)
+    return result
 
 @app.post("/scan/xss")
 async def run_xss_scan(target: str):

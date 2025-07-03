@@ -7,7 +7,7 @@ export default function ScanForm() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [scanStatus, setScanStatus] = useState("");
-  const controllerRef = useRef(null);  // Holds AbortController instance
+  const controllerRef = useRef(null); // Holds AbortController instance
 
   const handleScan = async () => {
     if (!target) return alert("Please enter a target URL.");
@@ -15,69 +15,35 @@ export default function ScanForm() {
     setResult(null);
     setScanStatus("");
 
-    // Create a new AbortController
     const controller = new AbortController();
     controllerRef.current = controller;
 
     try {
       if (scanType === "all") {
         const fullResult = { target };
+        const start = Date.now();
 
-        setScanStatus("🔍 Scanning for XSS...");
-        fullResult.xss = (await axios.post(
-          `http://localhost:8000/scan/xss?target=${encodeURIComponent(target)}`,
-          {},
-          { signal: controller.signal }
-        )).data;
+        const scanStep = async (label, endpoint, key) => {
+          setScanStatus(label);
+          const res = await axios.post(
+            `http://localhost:8000/scan/${endpoint}?target=${encodeURIComponent(target)}`,
+            {},
+            { signal: controller.signal }
+          );
+          fullResult[key] = res.data;
+        };
 
-        setScanStatus("💉 Scanning for SQL Injection...");
-        fullResult.sql_injection = (await axios.post(
-          `http://localhost:8000/scan/sqli?target=${encodeURIComponent(target)}`,
-          {},
-          { signal: controller.signal }
-        )).data;
+        await scanStep("🔍 Scanning for XSS...", "xss", "xss");
+        await scanStep("💉 Scanning for SQL Injection...", "sqli", "sql_injection");
+        await scanStep("🔓 Scanning for CSRF...", "csrf", "csrf");
+        await scanStep("🔁 Scanning for Open Redirect...", "open-redirect", "open_redirect");
+        await scanStep("📭 Checking Security Headers...", "security-headers", "security_headers");
+        await scanStep("🎯 Scanning for Clickjacking...", "clickjacking", "clickjacking");
+        await scanStep("🗂️ Scanning for Path Traversal...", "path-traversal", "path_traversal");
+        await scanStep("💣 Scanning for Remote Code Execution...", "rce", "rce");
 
-        setScanStatus("🔓 Scanning for CSRF...");
-        fullResult.csrf = (await axios.post(
-          `http://localhost:8000/scan/csrf?target=${encodeURIComponent(target)}`,
-          {},
-          { signal: controller.signal }
-        )).data;
-
-        setScanStatus("🔁 Scanning for Open Redirect...");
-        fullResult.open_redirect = (await axios.post(
-          `http://localhost:8000/scan/open-redirect?target=${encodeURIComponent(target)}`,
-          {},
-          { signal: controller.signal }
-        )).data;
-
-        setScanStatus("📭 Checking Security Headers...");
-        fullResult.security_headers = (await axios.post(
-          `http://localhost:8000/scan/security-headers?target=${encodeURIComponent(target)}`,
-          {},
-          { signal: controller.signal }
-        )).data;
-
-        setScanStatus("🎯 Scanning for Clickjacking...");
-        fullResult.clickjacking = (await axios.post(
-          `http://localhost:8000/scan/clickjacking?target=${encodeURIComponent(target)}`,
-          {},
-          { signal: controller.signal }
-        )).data;
-
-        setScanStatus("🗂️ Scanning for Path Traversal...");
-        fullResult.path_traversal = (await axios.post(
-          `http://localhost:8000/scan/path-traversal?target=${encodeURIComponent(target)}`,
-          {},
-          { signal: controller.signal }
-        )).data;
-
-        setScanStatus("💣 Scanning for Remote Code Execution...");
-        fullResult.rce = (await axios.post(
-          `http://localhost:8000/scan/rce?target=${encodeURIComponent(target)}`,
-          {},
-          { signal: controller.signal }
-        )).data;
+        const totalDuration = (Date.now() - start) / 1000;
+        fullResult.total_duration = `${totalDuration.toFixed(2)}s`;
 
         setScanStatus("✅ Full Scan Complete.");
         setResult(fullResult);
@@ -170,7 +136,7 @@ export default function ScanForm() {
           {scanType === "all" && typeof result === "object" ? (
             <div className="space-y-4">
               {Object.entries(result).map(([key, value]) =>
-                key !== "target" ? (
+                key !== "target" && key !== "total_duration" ? (
                   <div key={key} className="border border-gray-700 rounded p-3 bg-gray-900">
                     <h3 className="font-bold text-blue-400 capitalize mb-2">
                       {key.replace(/_/g, " ")} Result
@@ -179,9 +145,13 @@ export default function ScanForm() {
                       {value.duration ? `⏱️ Duration: ${value.duration}\n` : ""}
                       {JSON.stringify(value, null, 2)}
                     </pre>
-
                   </div>
                 ) : null
+              )}
+              {result.total_duration && (
+                <div className="text-sm text-right font-semibold text-green-500">
+                  ⏳ Total Duration: {result.total_duration}
+                </div>
               )}
             </div>
           ) : (

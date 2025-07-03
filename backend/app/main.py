@@ -1,5 +1,7 @@
 from fastapi import FastAPI
-from app.db import save_scan_result
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from app.db import save_scan_result, collection
 from app.scanners.sqli import run_sqlmap
 from app.models import ScanResult
 from app.scanners.xss_scanner import scan_xss
@@ -7,8 +9,19 @@ from app.scanners.csrf_scanner import scan_csrf
 from app.scanners.open_redirect_scanner import scan_open_redirect
 from app.scanners.security_headers_scanner import scan_security_headers
 from app.scanners.clickjacking_scanner import scan_clickjacking
+from bson import json_util
+import json
 
 app = FastAPI()
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # You can restrict this to your frontend domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def root():
@@ -69,3 +82,12 @@ async def run_full_scan(target: str):
 
     save_scan_result("FULL", target, full_result)
     return full_result
+
+@app.get("/history")
+async def get_scan_history(limit: int = 20):
+    try:
+        results = collection.find().sort("timestamp", -1).limit(limit)
+        json_results = json.loads(json_util.dumps(list(results)))
+        return JSONResponse(content=json_results)
+    except Exception as e:
+        return {"error": str(e)}

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import html2pdf from "html2pdf.js";
+import jsPDF from "jspdf";
 
-// Define severity levels and icons per vulnerability type
+// Severity levels and icons
 const severityLevels = {
   "XSS": "High",
   "SQL Injection": "High",
@@ -27,7 +27,6 @@ const icons = {
   "FULL": "🛡️"
 };
 
-// Map severity to color classes
 const severityColor = {
   "Critical": "bg-red-800",
   "High": "bg-red-600",
@@ -45,16 +44,45 @@ export default function ScanHistory() {
       .catch(err => console.error(err));
   }, []);
 
-  const generatePDF = (item, index) => {
-    const element = document.getElementById(`scan-report-${index}`);
-    const opt = {
-      margin: 0.5,
-      filename: `${item.type}-${new Date(item.timestamp.$date).toISOString()}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+  const stripEmojis = (text) =>
+    text.replace(/[\u{1F300}-\u{1F6FF}]/gu, ""); // Remove emojis for PDF
+
+  const generatePDF = (item) => {
+    const doc = new jsPDF({ unit: "pt", format: "a4", orientation: "portrait" });
+    const margin = 40;
+    const lineHeight = 18;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let y = margin;
+
+    const writeLine = (text, bold = false) => {
+      if (y + lineHeight > pageHeight - margin) {
+        doc.addPage();
+        y = margin;
+      }
+      if (bold) doc.setFont("helvetica", "bold");
+      else doc.setFont("helvetica", "normal");
+
+      const safeText = stripEmojis(text);
+      const lines = doc.splitTextToSize(safeText, pageWidth - 2 * margin);
+      lines.forEach(line => {
+        doc.text(line, margin, y);
+        y += lineHeight;
+      });
     };
-    html2pdf().set(opt).from(element).save();
+
+    writeLine("WebVulnScan-Pro Report", true);
+    writeLine("");
+    writeLine(`Scan Type: ${item.type}`);
+    writeLine(`Target: ${item.target}`);
+    writeLine(`Time: ${new Date(item.timestamp.$date).toLocaleString()}`);
+    writeLine("");
+    writeLine("Scan Result:", true);
+
+    const resultText = JSON.stringify(item.result, null, 2).split("\n");
+    resultText.forEach(line => writeLine(line));
+
+    doc.save(`${item.type.replace(/\s+/g, "_")}_Report.pdf`);
   };
 
   return (
@@ -69,7 +97,10 @@ export default function ScanHistory() {
           const colorClass = severityColor[severity] || "bg-gray-500";
 
           return (
-            <div key={i} className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+            <div
+              key={i}
+              className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow-sm"
+            >
               <div className="flex justify-between items-center">
                 <div className="text-lg font-semibold text-blue-500">
                   {icon} {type}
@@ -80,24 +111,35 @@ export default function ScanHistory() {
               </div>
 
               <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mt-2">
-                <span className="block">🌐 <strong>Target:</strong> {item.target}</span>
-                <span className="block">🕒 <strong>Time:</strong> {new Date(item.timestamp.$date).toLocaleString()}</span>
+                <span className="block">
+                  🌐 <strong>Target:</strong> {item.target}
+                </span>
+                <span className="block">
+                  🕒 <strong>Time:</strong> {new Date(item.timestamp.$date).toLocaleString()}
+                </span>
               </div>
 
               <details className="mt-2">
-                <summary className="cursor-pointer text-blue-600">View Result</summary>
-                <div id={`scan-report-${i}`} className="mt-2 bg-gray-200 dark:bg-gray-700 p-2 rounded text-sm overflow-x-auto">
-                  <h3 className="text-base font-semibold text-blue-800 dark:text-blue-400 mb-2">
+                <summary className="cursor-pointer text-blue-600">
+                  View Result
+                </summary>
+
+                <div
+                  className="mt-2 bg-gray-200 dark:bg-gray-700 p-4 rounded text-sm overflow-x-auto leading-relaxed"
+                  style={{ fontFamily: "monospace", whiteSpace: "pre-wrap" }}
+                >
+                  <h3 className="text-base font-bold text-blue-700 dark:text-blue-300 mb-2">
                     WebVulnScan-Pro Report
                   </h3>
                   <p><strong>Scan Type:</strong> {item.type}</p>
                   <p><strong>Target:</strong> {item.target}</p>
                   <p><strong>Timestamp:</strong> {new Date(item.timestamp.$date).toLocaleString()}</p>
-                  <p className="mt-2 font-medium">Scan Result:</p>
+                  <p className="mt-2 font-semibold">Scan Result:</p>
                   <pre>{JSON.stringify(item.result, null, 2)}</pre>
                 </div>
+
                 <button
-                  onClick={() => generatePDF(item, i)}
+                  onClick={() => generatePDF(item)}
                   className="mt-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
                 >
                   📥 Download PDF

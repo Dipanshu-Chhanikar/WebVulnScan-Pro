@@ -47,7 +47,6 @@ export default function ScanForm() {
         <option value="all">Full Scan</option>
       </select>
 
-
       <button
         onClick={handleScan}
         className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-semibold"
@@ -57,23 +56,27 @@ export default function ScanForm() {
       </button>
 
       {result && (
-        <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-x-auto text-sm max-h-[400px]">
+        <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-x-auto text-sm max-h-[600px]">
           <h2 className="font-bold mb-2 text-blue-700 dark:text-blue-400">✅ Scan Result:</h2>
-          {scanType === "all" ? (
+
+          {scanType === "all" && typeof result === "object" ? (
             <div className="space-y-4">
-              {["xss", "csrf", "open_redirect", "security_headers", "clickjacking"].map((type) => (
-                <div key={type} className="border border-gray-600 rounded p-3">
-                  <h3 className="font-bold text-blue-500 capitalize">{type.replace("_", " ")} Result</h3>
-                  <pre className="text-sm overflow-x-auto">
-                    {JSON.stringify(result[type], null, 2)}
-                  </pre>
-                </div>
-              ))}
+              {Object.entries(result).map(([key, value]) =>
+                key !== "target" ? (
+                  <div key={key} className="border border-gray-700 rounded p-3 bg-gray-900">
+                    <h3 className="font-bold text-blue-400 capitalize mb-2">
+                      {key.replace(/_/g, " ")} Result
+                    </h3>
+                    <pre className="text-gray-200 whitespace-pre-wrap">
+                      {JSON.stringify(value, null, 2)}
+                    </pre>
+                  </div>
+                ) : null
+              )}
             </div>
           ) : (
             <pre>{JSON.stringify(result, null, 2)}</pre>
           )}
-
         </div>
       )}
     </div>

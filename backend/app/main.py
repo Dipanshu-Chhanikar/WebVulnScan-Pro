@@ -91,7 +91,6 @@ async def run_full_scan(target: str):
     rce = scan_rce(target)
 
     full_result = {
-        "target": target,
         "xss": xss,
         "csrf": csrf,
         "open_redirect": redirect,
@@ -100,10 +99,14 @@ async def run_full_scan(target: str):
         "sql_injection": sqli,
         "path_traversal": path,
         "rce": rce
-    }
+        }
 
     save_scan_result("FULL", target, full_result)
-    return full_result
+    return {
+        "target": target,
+        **full_result
+    }
+
 
 
 @app.get("/history")

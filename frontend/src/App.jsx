@@ -2,6 +2,7 @@ import { useState } from "react";
 import ScanForm from "./components/ScanForm";
 import ScanHistory from "./components/ScanHistory";
 import Documentation from "./components/Documentation";
+import Vulnerabilities from "./components/Vulnerabilities";
 
 export default function App() {
   const [view, setView] = useState("home");
@@ -25,8 +26,9 @@ export default function App() {
               <button
                 key={item}
                 onClick={() => setView(item.toLowerCase())}
-                className={`text-sm px-4 py-2 rounded hover:bg-blue-600 transition ${view === item.toLowerCase() ? "bg-blue-700" : ""
-                  }`}
+                className={`text-sm px-4 py-2 rounded hover:bg-blue-600 transition ${
+                  view === item.toLowerCase() ? "bg-blue-700" : ""
+                }`}
               >
                 {item}
               </button>
@@ -58,7 +60,6 @@ export default function App() {
           </div>
         )}
 
-
         {view === "results" && (
           <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl font-semibold text-blue-400 mb-4">Scan Results</h2>
@@ -66,10 +67,11 @@ export default function App() {
           </div>
         )}
 
-
         {view === "documentation" && <Documentation />}
 
-        {["vulnerabilities", "about", "contact"].includes(view) && (
+        {view === "vulnerabilities" && <Vulnerabilities />}
+
+        {["about", "contact"].includes(view) && (
           <div className="text-center text-gray-400 text-lg">
             📄 {view.charAt(0).toUpperCase() + view.slice(1)} page coming soon...
           </div>

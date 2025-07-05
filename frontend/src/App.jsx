@@ -3,6 +3,7 @@ import ScanForm from "./components/ScanForm";
 import ScanHistory from "./components/ScanHistory";
 import Documentation from "./components/Documentation";
 import Vulnerabilities from "./components/Vulnerabilities";
+import About from "./components/About";
 
 export default function App() {
   const [view, setView] = useState("home");
@@ -71,7 +72,9 @@ export default function App() {
 
         {view === "vulnerabilities" && <Vulnerabilities />}
 
-        {["about", "contact"].includes(view) && (
+        {view === "about" && <About />}
+
+        {["contact"].includes(view) && (
           <div className="text-center text-gray-400 text-lg">
             📄 {view.charAt(0).toUpperCase() + view.slice(1)} page coming soon...
           </div>

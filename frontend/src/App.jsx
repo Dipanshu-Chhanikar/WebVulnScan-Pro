@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ScanForm from "./components/ScanForm";
 import ScanHistory from "./components/ScanHistory";
+import Documentation from "./components/Documentation";
 
 export default function App() {
   const [view, setView] = useState("home");
@@ -66,8 +67,9 @@ export default function App() {
         )}
 
 
-        {/* Placeholder sections */}
-        {["vulnerabilities", "documentation", "about", "contact"].includes(view) && (
+        {view === "documentation" && <Documentation />}
+
+        {["vulnerabilities", "about", "contact"].includes(view) && (
           <div className="text-center text-gray-400 text-lg">
             📄 {view.charAt(0).toUpperCase() + view.slice(1)} page coming soon...
           </div>
